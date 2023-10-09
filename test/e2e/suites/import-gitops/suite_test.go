@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -104,15 +105,20 @@ var _ = BeforeSuite(func() {
 		hostName = setupClusterResult.IsolatedHostName
 	}
 
+	Expect(e2eConfig.Images).To(HaveLen(1))
+	imageNameTag := strings.Split(e2eConfig.Images[0].Name, ":")
+	Expect(imageNameTag).To(HaveLen(2))
+
 	testenv.DeployRancherTurtles(ctx, testenv.DeployRancherTurtlesInput{
 		BootstrapClusterProxy:        setupClusterResult.BootstrapClusterProxy,
+		UseExistingCluster:           flagVals.UseExistingCluster,
 		HelmBinaryPath:               flagVals.HelmBinaryPath,
 		ChartPath:                    flagVals.ChartPath,
 		CAPIProvidersSecretYAML:      e2e.CapiProvidersSecret,
 		CAPIProvidersYAML:            e2e.CapiProviders,
 		Namespace:                    turtlesframework.DefaultRancherTurtlesNamespace,
-		Image:                        "ghcr.io/rancher-sandbox/rancher-turtles-amd64",
-		Tag:                          "v0.0.1",
+		Image:                        imageNameTag[0],
+		Tag:                          imageNameTag[1],
 		WaitDeploymentsReadyInterval: e2eConfig.GetIntervals(setupClusterResult.BootstrapClusterProxy.GetName(), "wait-controllers"),
 	})
 
@@ -142,11 +148,20 @@ var _ = BeforeSuite(func() {
 					Name:      "capz-controller-manager",
 					Namespace: "capz-system",
 				},
+				{
+					Name:      "rke2-bootstrap-controller-manager",
+					Namespace: "rke2-bootstrap-system",
+				},
+				{
+					Name:      "rke2-control-plane-controller-manager",
+					Namespace: "rke2-control-plane-system",
+				},
 			},
 		})
 	}
 
 	testenv.RancherDeployIngress(ctx, testenv.RancherDeployIngressInput{
+		UseExistingCluster:       flagVals.UseExistingCluster,
 		BootstrapClusterProxy:    setupClusterResult.BootstrapClusterProxy,
 		HelmBinaryPath:           flagVals.HelmBinaryPath,
 		IsolatedMode:             flagVals.IsolatedMode,
@@ -162,6 +177,7 @@ var _ = BeforeSuite(func() {
 	})
 
 	testenv.DeployRancher(ctx, testenv.DeployRancherInput{
+		UseExistingCluster:     flagVals.UseExistingCluster,
 		BootstrapClusterProxy:  setupClusterResult.BootstrapClusterProxy,
 		HelmBinaryPath:         flagVals.HelmBinaryPath,
 		RancherChartRepoName:   e2eConfig.GetVariable(e2e.RancherRepoNameVar),
@@ -181,6 +197,7 @@ var _ = BeforeSuite(func() {
 	})
 
 	giteaResult = testenv.DeployGitea(ctx, testenv.DeployGiteaInput{
+		UseExistingCluster:    flagVals.UseExistingCluster,
 		BootstrapClusterProxy: setupClusterResult.BootstrapClusterProxy,
 		HelmBinaryPath:        flagVals.HelmBinaryPath,
 		ChartRepoName:         e2eConfig.GetVariable(e2e.GiteaRepoNameVar),

@@ -17,6 +17,7 @@ intervals:
   default/wait-eks-delete: ["20m", "30s"]
   default/wait-aks-delete: ["20m", "30s"]
   default/wait-azure: ["30m", "30s"]
+  default/wait-rke2-docker: ["15m", "30s"]
 
 variables:
   RANCHER_VERSION: "v2.7.6"

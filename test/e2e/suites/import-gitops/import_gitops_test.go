@@ -39,6 +39,9 @@ var (
 
 	//go:embed cluster-templates/azure-aks-mmp.yaml
 	azureAKSMMP []byte
+
+	//go:embed cluster-templates/docker-rke2.yaml
+	rke2Docker []byte
 )
 
 var _ = Describe("[Docker] [Kubeadm] Create and delete CAPI cluster functionality should work with namespace auto-import", Label(e2e.ShortTestLabel, e2e.FullTestLabel), func() {
@@ -126,6 +129,36 @@ var _ = Describe("[Azure] [AKS] Create and delete CAPI cluster functionality sho
 			RancherServerURL:          hostName,
 			CAPIClusterCreateWaitName: "wait-capz-create-cluster",
 			DeleteClusterWaitName:     "wait-aks-delete",
+		}
+	})
+})
+
+var _ = FDescribe("[Docker] [RKE2] Create and delete CAPI cluster functionality should work with namespace auto-import", Label(e2e.FullTestLabel), func() {
+
+	BeforeEach(func() {
+		SetClient(setupClusterResult.BootstrapClusterProxy.GetClient())
+		SetContext(ctx)
+	})
+
+	CreateUsingGitOpsSpec(ctx, func() CreateUsingGitOpsSpecInput {
+		return CreateUsingGitOpsSpecInput{
+			E2EConfig:                 e2eConfig,
+			BootstrapClusterProxy:     setupClusterResult.BootstrapClusterProxy,
+			ClusterctlConfigPath:      flagVals.ConfigPath,
+			ArtifactFolder:            flagVals.ArtifactFolder,
+			ClusterTemplate:           rke2Docker,
+			ClusterName:               "cluster-rke2-docker",
+			OverrideKubernetesVersion: "v1.28.2",
+			ControlPlaneMachineCount:  ptr.To[int](1),
+			WorkerMachineCount:        ptr.To[int](1),
+			GitAddr:                   giteaResult.GitAddress,
+			GitAuthSecretName:         e2e.AuthSecretName,
+			SkipCleanup:               false,
+			SkipDeletionTest:          false,
+			LabelNamespace:            true,
+			RancherServerURL:          hostName,
+			CAPIClusterCreateWaitName: "wait-rke2-docker",
+			DeleteClusterWaitName:     "wait-rke2-docker",
 		}
 	})
 })

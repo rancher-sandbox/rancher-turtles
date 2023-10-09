@@ -46,6 +46,7 @@ type DeployGiteaInput struct {
 	Username              string
 	Password              string
 	AuthSecretName        string
+	UseExistingCluster    bool
 }
 
 type DeployGiteaResult struct {
@@ -62,6 +63,24 @@ func DeployGitea(ctx context.Context, input DeployGiteaInput) *DeployGiteaResult
 	Expect(input.ChartVersion).ToNot(BeEmpty(), "Chartversion is required for DeployGitea")
 	Expect(input.RolloutWaitInterval).ToNot(BeNil(), "RolloutWaitInterval is required for DeployGitea")
 	Expect(input.ServiceWaitInterval).ToNot(BeNil(), "ServiceWaitInterval is required for DeployGitea")
+
+	if input.UseExistingCluster {
+		addr := turtlesframework.GetNodeAddress(ctx, turtlesframework.GetNodeAddressInput{
+			Lister:       input.BootstrapClusterProxy.GetClient(),
+			NodeIndex:    0,
+			AddressIndex: 0,
+		})
+		port := turtlesframework.GetServicePortByName(ctx, turtlesframework.GetServicePortByNameInput{
+			GetLister:        input.BootstrapClusterProxy.GetClient(),
+			ServiceName:      "gitea-http",
+			ServiceNamespace: "default",
+			PortName:         "http",
+		}, input.ServiceWaitInterval...)
+		Expect(port.NodePort).ToNot(Equal(0), "Node port for Gitea service is not set")
+		return &DeployGiteaResult{
+			GitAddress: fmt.Sprintf("http://%s:%d", addr, port.NodePort),
+		}
+	}
 
 	if input.Username != "" {
 		Expect(input.Password).ToNot(BeEmpty(), "Password is required for DeployGitea if a username is supplied")

@@ -40,6 +40,7 @@ type DeployRancherTurtlesInput struct {
 	Image                        string
 	Tag                          string
 	WaitDeploymentsReadyInterval []interface{}
+	UseExistingCluster           bool
 }
 
 func DeployRancherTurtles(ctx context.Context, input DeployRancherTurtlesInput) {
@@ -53,6 +54,10 @@ func DeployRancherTurtles(ctx context.Context, input DeployRancherTurtlesInput) 
 	Expect(input.Image).ToNot(BeEmpty(), "Image is required for DeployRancherTurtles")
 	Expect(input.Tag).ToNot(BeEmpty(), "Tag is required for DeployRancherTurtles")
 	Expect(input.WaitDeploymentsReadyInterval).ToNot(BeNil(), "WaitDeploymentsReadyInterval is required for DeployRancherTurtles")
+
+	if input.UseExistingCluster {
+		return
+	}
 
 	namespace := input.Namespace
 	if namespace == "" {

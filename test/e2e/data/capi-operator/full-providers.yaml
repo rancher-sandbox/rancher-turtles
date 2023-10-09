@@ -9,6 +9,16 @@ kind: Namespace
 metadata:
   name: capz-system
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rke2-bootstrap-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rke2-control-plane-system
+---
 apiVersion: operator.cluster.x-k8s.io/v1alpha1
 kind: InfrastructureProvider
 metadata:
@@ -26,3 +36,23 @@ metadata:
 spec:
   secretName: azure-variables
   secretNamespace: default
+---
+apiVersion: operator.cluster.x-k8s.io/v1alpha1
+kind: BootstrapProvider
+metadata:
+  name: bootstrap-caprke2
+  namespace: rke2-bootstrap-system
+spec:
+  fetchConfig:
+    url: https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/v0.1.1/bootstrap-components.yaml
+  version: v0.1.1
+---
+apiVersion: operator.cluster.x-k8s.io/v1alpha1
+kind: ControlPlaneProvider
+metadata:
+  name: control-plane-caprke2
+  namespace: rke2-control-plane-system
+spec:
+  fetchConfig:
+    url: https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/v0.1.1/control-plane-components.yaml
+  version: v0.1.1

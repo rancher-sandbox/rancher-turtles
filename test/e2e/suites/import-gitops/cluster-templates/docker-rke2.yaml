@@ -1,0 +1,122 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerCluster
+metadata:
+  name: ${CLUSTER_NAME}
+spec:
+  loadBalancer:
+    customHAProxyConfigTemplateRef:
+      name: rke2-ha-proxy-config
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster 
+metadata:
+  name: ${CLUSTER_NAME} 
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 10.45.0.0/16
+    services:
+      cidrBlocks:
+      - 10.46.0.0/16
+    serviceDomain: cluster.local
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+    kind: RKE2ControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: DockerCluster
+    name: ${CLUSTER_NAME}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerMachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+spec:
+  template:
+    spec: 
+      customImage: ghcr.io/rancher-sandbox/ubuntu-22.04-rke2:${KUBERNETES_VERSION}
+      extraMounts:
+      - containerPath: /var/run/docker.sock
+        hostPath: /var/run/docker.sock
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: RKE2ControlPlane
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+spec: 
+  agentConfig:
+    version: ${KUBERNETES_VERSION}+rke2r1
+  serverConfig:
+    cni: calico
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: DockerMachineTemplate
+    name: ${CLUSTER_NAME}-control-plane
+  replicas: ${CONTROL_PLANE_MACHINE_COUNT}
+  nodeDrainTimeout: 2m
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerMachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-md-0
+spec:
+  template:
+    spec: 
+      customImage: ghcr.io/rancher-sandbox/ubuntu-22.04-rke2:${KUBERNETES_VERSION}
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+kind: RKE2ConfigTemplate
+metadata:
+  name: ${CLUSTER_NAME}-md-0
+spec: 
+  template:
+    spec:
+      agentConfig:
+        version: ${KUBERNETES_VERSION}+rke2r1
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: worker-md-0
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_MACHINE_COUNT}
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+  template:
+    spec:
+      version: ${KUBERNETES_VERSION}
+      clusterName: ${CLUSTER_NAME}
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+          kind: RKE2ConfigTemplate
+          name: ${CLUSTER_NAME}-md-0
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: DockerMachineTemplate
+        name: ${CLUSTER_NAME}-md-0
+---
+apiVersion: v1
+data:
+  value: |
+    # addtional config
+    frontend additional-join
+      bind *:9345
+      {{ if .IPv6 -}}
+      bind :::9345;
+      {{- end }}
+      default_backend additional-servers
+    backend additional-servers
+      option httpchk GET /v1-additional/readyz
+      http-check expect status 403
+      {{range $server, $address := .BackendServers}}
+      server {{ $server }} {{ JoinHostPort $address "9345" }} check check-ssl verify none resolvers docker resolve-prefer {{ if $.IPv6 -}} ipv6 {{- else -}} ipv4 {{- end }}
+      {{- end}}
+kind: ConfigMap
+metadata:
+  name: rke2-ha-proxy-config
+

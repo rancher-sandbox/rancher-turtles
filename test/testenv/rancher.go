@@ -52,9 +52,13 @@ type DeployRancherInput struct {
 	RancherIngressConfig   []byte
 	RancherServicePatch    []byte
 	Development            bool
+	UseExistingCluster     bool
 }
 
 func DeployRancher(ctx context.Context, input DeployRancherInput) {
+	if input.UseExistingCluster {
+		return
+	}
 
 	Expect(ctx).NotTo(BeNil(), "ctx is required for DeployRancher")
 	Expect(input.BootstrapClusterProxy).ToNot(BeNil(), "BootstrapClusterProxy is required for DeployRancher")
@@ -187,6 +191,7 @@ type RancherDeployIngressInput struct {
 	NgrokRepoName            string
 	NgrokRepoURL             string
 	DefaultIngressClassPatch []byte
+	UseExistingCluster       bool
 }
 
 func RancherDeployIngress(ctx context.Context, input RancherDeployIngressInput) {
@@ -207,6 +212,10 @@ func RancherDeployIngress(ctx context.Context, input RancherDeployIngressInput) 
 
 	komega.SetClient(input.BootstrapClusterProxy.GetClient())
 	komega.SetContext(ctx)
+
+	if input.UseExistingCluster {
+		return
+	}
 
 	if input.IsolatedMode {
 		By("Deploying nginx ingress")

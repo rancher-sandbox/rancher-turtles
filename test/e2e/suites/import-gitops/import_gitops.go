@@ -65,6 +65,9 @@ type CreateUsingGitOpsSpecInput struct {
 	// If not specified, 1 will be used.
 	WorkerMachineCount *int
 
+	// OverrideKubernetesVersion if specified will override the Kubernetes version used in the cluster template.
+	OverrideKubernetesVersion string
+
 	GitAddr           string
 	GitAuthSecretName string
 
@@ -160,16 +163,22 @@ func CreateUsingGitOpsSpec(ctx context.Context, inputGetter func() CreateUsingGi
 		clustersDir := filepath.Join(repoDir, "clusters")
 		os.MkdirAll(clustersDir, os.ModePerm)
 
+		additionalVariables := map[string]string{
+			"CLUSTER_NAME":                input.ClusterName,
+			"WORKER_MACHINE_COUNT":        strconv.Itoa(workerMachineCount),
+			"CONTROL_PLANE_MACHINE_COUNT": strconv.Itoa(controlPlaneMachineCount),
+		}
+
+		if input.OverrideKubernetesVersion != "" {
+			additionalVariables["KUBERNETES_VERSION"] = input.OverrideKubernetesVersion
+		}
+
 		clusterPath := filepath.Join(clustersDir, fmt.Sprintf("%s.yaml", input.ClusterName))
 		Expect(turtlesframework.ApplyFromTemplate(ctx, turtlesframework.ApplyFromTemplateInput{
-			Getter:         input.E2EConfig.GetVariable,
-			Template:       input.ClusterTemplate,
-			OutputFilePath: clusterPath,
-			AddtionalEnvironmentVariables: map[string]string{
-				"CLUSTER_NAME":                input.ClusterName,
-				"WORKER_MACHINE_COUNT":        strconv.Itoa(workerMachineCount),
-				"CONTROL_PLANE_MACHINE_COUNT": strconv.Itoa(controlPlaneMachineCount),
-			},
+			Getter:                        input.E2EConfig.GetVariable,
+			Template:                      input.ClusterTemplate,
+			OutputFilePath:                clusterPath,
+			AddtionalEnvironmentVariables: additionalVariables,
 		})).To(Succeed())
 
 		fleetPath := filepath.Join(clustersDir, "fleet.yaml")
