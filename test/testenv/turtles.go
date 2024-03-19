@@ -132,4 +132,22 @@ func DeployRancherTurtles(ctx context.Context, input DeployRancherTurtlesInput) 
 			Namespace: "capd-system",
 		}},
 	}, input.WaitDeploymentsReadyInterval...)
+
+	By("Waiting for CAPI RKE2 bootstrap deployment to be available")
+	framework.WaitForDeploymentsAvailable(ctx, framework.WaitForDeploymentsAvailableInput{
+		Getter: input.BootstrapClusterProxy.GetClient(),
+		Deployment: &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{
+			Name:      "rke2-bootstrap-controller-manager",
+			Namespace: "rke2-bootstrap-system",
+		}},
+	}, input.WaitDeploymentsReadyInterval...)
+
+	By("Waiting for CAPI RKE2 control plane deployment to be available")
+	framework.WaitForDeploymentsAvailable(ctx, framework.WaitForDeploymentsAvailableInput{
+		Getter: input.BootstrapClusterProxy.GetClient(),
+		Deployment: &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{
+			Name:      "rke2-control-plane-controller-manager",
+			Namespace: "rke2-control-plane-system",
+		}},
+	}, input.WaitDeploymentsReadyInterval...)
 }
