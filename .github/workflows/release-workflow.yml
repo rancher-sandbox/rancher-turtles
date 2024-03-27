@@ -99,7 +99,7 @@ jobs:
       actions: read
       id-token: write
       packages: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.9.0
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.10.0
     with:
       digest: ${{ needs.build.outputs.digest }}
       image: ${{ format('{0}-{1}', vars[inputs.image], inputs.arch) }}
