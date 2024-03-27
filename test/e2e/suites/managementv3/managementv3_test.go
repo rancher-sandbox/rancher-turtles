@@ -36,6 +36,10 @@ var _ = Describe("[Docker] [Kubeadm] - [management.cattle.io/v3] Create and dele
 	})
 
 	specs.CreateMgmtV3UsingGitOpsSpec(ctx, func() specs.CreateMgmtV3UsingGitOpsSpecInput {
+		cni := e2e.KindnetCNI
+		if flagVals.CNI == "calico" {
+			cni = e2e.CalicoCNI
+		}
 		return specs.CreateMgmtV3UsingGitOpsSpecInput{
 			E2EConfig:                      e2eConfig,
 			BootstrapClusterProxy:          setupClusterResult.BootstrapClusterProxy,
@@ -44,6 +48,7 @@ var _ = Describe("[Docker] [Kubeadm] - [management.cattle.io/v3] Create and dele
 			ArtifactFolder:                 flagVals.ArtifactFolder,
 			ClusterTemplate:                e2e.CAPIDockerKubeadm,
 			ClusterName:                    "highlander-e2e-clusterv3-1",
+			CNITemplate:                    cni,
 			ControlPlaneMachineCount:       ptr.To[int](1),
 			WorkerMachineCount:             ptr.To[int](1),
 			GitAddr:                        giteaResult.GitAddress,

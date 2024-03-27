@@ -3,12 +3,16 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: capa-system
+  annotations:
+    "helm.sh/resource-policy": keep
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: full-variables
   namespace: capa-system
+  annotations:
+    "helm.sh/resource-policy": keep
 type: Opaque
 stringData:
   AWS_B64ENCODED_CREDENTIALS: "{{ .AWSEncodedCredentials }}"

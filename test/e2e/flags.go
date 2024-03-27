@@ -54,6 +54,9 @@ type FlagValues struct {
 
 	// ClusterctlBinaryPath is the path to the clusterctl binary to use.
 	ClusterctlBinaryPath string
+
+	// CNI for the cluster to use. Values include calico or kindnet.
+	CNI string
 }
 
 // InitFlags is used to specify the standard flags for the e2e tests.
@@ -68,4 +71,5 @@ func InitFlags(values *FlagValues) {
 	flag.StringVar(&values.ClusterctlBinaryPath, "e2e.clusterctl-binary-path", "helm", "path to the clusterctl binary")
 	flag.StringVar(&values.ChartPath, "e2e.chart-path", "", "path to the operator chart")
 	flag.BoolVar(&values.IsolatedMode, "e2e.isolated-mode", false, "if true, the test will run without ngrok and exposing the cluster to the internet. This setup will only work with CAPD or other providers that run in the same network as the bootstrap cluster.")
+	flag.StringVar(&values.CNI, "e2e.cni", "calico", "specify CNI solution for the cluster. Allowed values: calico, kindnet")
 }

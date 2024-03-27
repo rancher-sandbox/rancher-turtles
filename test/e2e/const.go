@@ -74,6 +74,12 @@ var (
 
 	//go:embed data/cluster-templates/vsphere-kubeadm.yaml
 	CAPIvSphereKubeadm []byte
+
+	//go:embed data/cluster-templates/cni-calico.yaml
+	CalicoCNI []byte
+
+	//go:embed data/cluster-templates/cni-kindnet.yaml
+	KindnetCNI []byte
 )
 
 const (

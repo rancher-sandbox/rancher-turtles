@@ -40,6 +40,10 @@ var _ = Describe("[Docker] [Kubeadm] Create and delete CAPI cluster functionalit
 	})
 
 	specs.CreateUsingGitOpsSpec(ctx, func() specs.CreateUsingGitOpsSpecInput {
+		cni := e2e.KindnetCNI
+		if flagVals.CNI == "calico" {
+			cni = e2e.CalicoCNI
+		}
 		return specs.CreateUsingGitOpsSpecInput{
 			E2EConfig:                 e2eConfig,
 			BootstrapClusterProxy:     setupClusterResult.BootstrapClusterProxy,
@@ -48,6 +52,7 @@ var _ = Describe("[Docker] [Kubeadm] Create and delete CAPI cluster functionalit
 			ArtifactFolder:            flagVals.ArtifactFolder,
 			ClusterTemplate:           e2e.CAPIDockerKubeadm,
 			ClusterName:               "highlander-e2e-cluster1",
+			CNITemplate:               cni,
 			ControlPlaneMachineCount:  ptr.To[int](1),
 			WorkerMachineCount:        ptr.To[int](1),
 			GitAddr:                   giteaResult.GitAddress,

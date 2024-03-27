@@ -4,6 +4,8 @@ kind: CAPIProvider
 metadata:
   name: aws
   namespace: capa-system
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   type: infrastructure
   name: aws
@@ -22,6 +24,8 @@ kind: CAPIProvider
 metadata:
   name: azure
   namespace: capz-system
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   type: infrastructure
   name: azure

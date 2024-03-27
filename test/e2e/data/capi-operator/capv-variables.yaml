@@ -3,12 +3,16 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: capv-system
+  annotations:
+    "helm.sh/resource-policy": keep
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: vsphere-variables
   namespace: capv-system
+  annotations:
+    "helm.sh/resource-policy": keep
 type: Opaque
 stringData:
   VSPHERE_USERNAME: "${VSPHERE_USERNAME}"

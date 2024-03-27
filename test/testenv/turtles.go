@@ -23,10 +23,13 @@ import (
 	. "github.com/onsi/gomega"
 
 	appsv1 "k8s.io/api/apps/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	opframework "sigs.k8s.io/cluster-api-operator/test/framework"
 	"sigs.k8s.io/cluster-api/test/framework"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	turtlesv1 "github.com/rancher/turtles/api/v1alpha1"
 	turtlesframework "github.com/rancher/turtles/test/framework"
 )
 
@@ -129,6 +132,25 @@ func DeployRancherTurtles(ctx context.Context, input DeployRancherTurtlesInput) 
 		Getter: input.BootstrapClusterProxy.GetClient(),
 		Deployment: &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{
 			Name:      "capd-controller-manager",
+			Namespace: "capd-system",
+		}},
+	}, input.WaitDeploymentsReadyInterval...)
+
+	key := client.ObjectKey{
+		Namespace: "capd-system",
+		Name:      "helm",
+	}
+	if err := input.BootstrapClusterProxy.GetClient().Get(ctx, key, &turtlesv1.CAPIProvider{}); apierrors.IsNotFound(err) {
+		return
+	}
+
+	Expect(err).ToNot(HaveOccurred())
+
+	By("Waiting for CAPI helm provider deployment to be available")
+	framework.WaitForDeploymentsAvailable(ctx, framework.WaitForDeploymentsAvailableInput{
+		Getter: input.BootstrapClusterProxy.GetClient(),
+		Deployment: &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{
+			Name:      "caaph-controller-manager",
 			Namespace: "capd-system",
 		}},
 	}, input.WaitDeploymentsReadyInterval...)

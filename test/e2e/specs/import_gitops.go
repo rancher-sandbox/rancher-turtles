@@ -58,6 +58,8 @@ type CreateUsingGitOpsSpecInput struct {
 	ClusterName                 string
 	AdditionalTemplateVariables map[string]string
 
+	CNITemplate []byte
+
 	CAPIClusterCreateWaitName string
 	DeleteClusterWaitName     string
 
@@ -183,6 +185,16 @@ func CreateUsingGitOpsSpec(ctx context.Context, inputGetter func() CreateUsingGi
 			OutputFilePath:                clusterPath,
 			AddtionalEnvironmentVariables: additionalVars,
 		})).To(Succeed())
+
+		if input.CNITemplate != nil {
+			cniPath := filepath.Join(clustersDir, fmt.Sprintf("%s-cni.yaml", input.ClusterName))
+			Expect(turtlesframework.ApplyFromTemplate(ctx, turtlesframework.ApplyFromTemplateInput{
+				Getter:                        input.E2EConfig.GetVariable,
+				Template:                      input.CNITemplate,
+				OutputFilePath:                cniPath,
+				AddtionalEnvironmentVariables: additionalVars,
+			})).To(Succeed())
+		}
 
 		fleetPath := filepath.Join(clustersDir, "fleet.yaml")
 		turtlesframework.FleetCreateFleetFile(ctx, turtlesframework.FleetCreateFleetFileInput{

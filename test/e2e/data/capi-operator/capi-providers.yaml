@@ -3,12 +3,16 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: capd-system
+  annotations:
+    "helm.sh/resource-policy": keep
 ---
 apiVersion: turtles-capi.cattle.io/v1alpha1
 kind: CAPIProvider
 metadata:
   name: docker
   namespace: capd-system
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   name: docker
   type: infrastructure
@@ -19,12 +23,16 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: capi-kubeadm-bootstrap-system
+  annotations:
+    "helm.sh/resource-policy": keep
 ---
 apiVersion: turtles-capi.cattle.io/v1alpha1
 kind: CAPIProvider
 metadata:
   name: kubeadm-bootstrap
   namespace: capi-kubeadm-bootstrap-system
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   name: kubeadm
   type: bootstrap
@@ -36,15 +44,30 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: capi-kubeadm-control-plane-system
+  annotations:
+    "helm.sh/resource-policy": keep
 ---
 apiVersion: turtles-capi.cattle.io/v1alpha1
 kind: CAPIProvider
 metadata:
   name: kubeadm-control-plane
   namespace: capi-kubeadm-control-plane-system
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   name: kubeadm
   type: controlPlane
   version: v1.4.6
   configSecret:
     name: variables
+---
+apiVersion: turtles-capi.cattle.io/v1alpha1
+kind: CAPIProvider
+metadata:
+  name: helm
+  namespace: capd-system
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  type: addon
+  name: helm

@@ -12,22 +12,18 @@ spec:
       controlPlane: true
     fd3:
       controlPlane: true
-    fd4:
-      controlPlane: false
-    fd5:
-      controlPlane: false
-    fd6:
-      controlPlane: false
-    fd7:
-      controlPlane: false
-    fd8:
-      controlPlane: false
+    fd4: {}
+    fd5: {}
+    fd6: {}
+    fd7: {}
+    fd8: {}
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   labels:
     cni: ${CLUSTER_NAME}-crs-0
+    calico: "true"
   name: ${CLUSTER_NAME}
 spec:
   clusterNetwork:
@@ -145,139 +141,3 @@ spec:
         kind: DockerMachineTemplate
         name: ${CLUSTER_NAME}-md-0
       version: ${KUBERNETES_VERSION}
----
-apiVersion: addons.cluster.x-k8s.io/v1beta1
-kind: ClusterResourceSet
-metadata:
-  name: ${CLUSTER_NAME}-crs-0
-spec:
-  clusterSelector:
-    matchLabels:
-      cni: ${CLUSTER_NAME}-crs-0
-  resources:
-  - kind: ConfigMap
-    name: cni-${CLUSTER_NAME}-crs-0
-  strategy: ApplyOnce
----
-apiVersion: v1
-data:
-  kindnet.yaml: |
-    # kindnetd networking manifest
-    ---
-    kind: ClusterRole
-    apiVersion: rbac.authorization.k8s.io/v1
-    metadata:
-      name: kindnet
-    rules:
-      - apiGroups:
-          - ""
-        resources:
-          - nodes
-        verbs:
-          - list
-          - watch
-          - patch
-      - apiGroups:
-          - ""
-        resources:
-          - configmaps
-        verbs:
-          - get
-    ---
-    kind: ClusterRoleBinding
-    apiVersion: rbac.authorization.k8s.io/v1
-    metadata:
-      name: kindnet
-    roleRef:
-      apiGroup: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: kindnet
-    subjects:
-      - kind: ServiceAccount
-        name: kindnet
-        namespace: kube-system
-    ---
-    apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: kindnet
-      namespace: kube-system
-    ---
-    apiVersion: apps/v1
-    kind: DaemonSet
-    metadata:
-      name: kindnet
-      namespace: kube-system
-      labels:
-        tier: node
-        app: kindnet
-        k8s-app: kindnet
-    spec:
-      selector:
-        matchLabels:
-          app: kindnet
-      template:
-        metadata:
-          labels:
-            tier: node
-            app: kindnet
-            k8s-app: kindnet
-        spec:
-          hostNetwork: true
-          tolerations:
-            - operator: Exists
-              effect: NoSchedule
-          serviceAccountName: kindnet
-          containers:
-            - name: kindnet-cni
-              image: kindest/kindnetd:v20230511-dc714da8
-              env:
-                - name: HOST_IP
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: status.hostIP
-                - name: POD_IP
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: status.podIP
-                - name: POD_SUBNET
-                  value: '10.1.0.0/16'
-              volumeMounts:
-                - name: cni-cfg
-                  mountPath: /etc/cni/net.d
-                - name: xtables-lock
-                  mountPath: /run/xtables.lock
-                  readOnly: false
-                - name: lib-modules
-                  mountPath: /lib/modules
-                  readOnly: true
-              resources:
-                requests:
-                  cpu: "100m"
-                  memory: "50Mi"
-                limits:
-                  cpu: "100m"
-                  memory: "50Mi"
-              securityContext:
-                privileged: false
-                capabilities:
-                  add: ["NET_RAW", "NET_ADMIN"]
-          volumes:
-            - name: cni-bin
-              hostPath:
-                path: /opt/cni/bin
-                type: DirectoryOrCreate
-            - name: cni-cfg
-              hostPath:
-                path: /etc/cni/net.d
-                type: DirectoryOrCreate
-            - name: xtables-lock
-              hostPath:
-                path: /run/xtables.lock
-                type: FileOrCreate
-            - name: lib-modules
-              hostPath:
-                path: /lib/modules
-kind: ConfigMap
-metadata:
-  name: cni-${CLUSTER_NAME}-crs-0

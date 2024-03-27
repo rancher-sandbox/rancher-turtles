@@ -4,6 +4,8 @@ kind: CAPIProvider
 metadata:
   name: vsphere
   namespace: capv-system
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   name: vsphere
   type: infrastructure

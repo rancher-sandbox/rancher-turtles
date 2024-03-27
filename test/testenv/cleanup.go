@@ -74,7 +74,7 @@ func CollectArtifacts(ctx context.Context, kubeconfigPath, name string, args ...
 		return fmt.Errorf("Unable to collect artifacts: kubeconfig path is empty")
 	}
 
-	aargs := append([]string{"crust-gather", "collect", "--kubeconfig", kubeconfigPath, "-f", name}, args...)
+	aargs := append([]string{"crust-gather", "collect", "-v", "ERROR", "--kubeconfig", kubeconfigPath, "-f", name}, args...)
 	for _, secret := range secrets {
 		aargs = append(aargs, "-s", secret)
 	}

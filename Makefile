@@ -76,6 +76,7 @@ SKIP_RESOURCE_CLEANUP ?= false
 USE_EXISTING_CLUSTER ?= false
 USE_EKS ?= true
 ISOLATED_MODE ?= false
+CNI ?= calico # alternatively: kindnet
 GINKGO_NOCOLOR ?= false
 GINKGO_LABEL_FILTER ?= short
 GINKGO_TESTS ?= $(ROOT_DIR)/$(TEST_DIR)/e2e/suites/...
@@ -485,6 +486,9 @@ $(RELEASE_DIR):
 $(CHART_RELEASE_DIR):
 	mkdir -p $(CHART_RELEASE_DIR)/templates
 
+clean-chart-release-dir:
+	rm -rf $(CHART_RELEASE_DIR)
+
 $(CHART_PACKAGE_DIR):
 	mkdir -p $(CHART_PACKAGE_DIR)
 
@@ -493,7 +497,7 @@ release: clean-release $(RELEASE_DIR)  ## Builds and push container images using
 	$(MAKE) release-chart
 
 .PHONY: build-chart
-build-chart: $(HELM) $(KUSTOMIZE) $(RELEASE_DIR) $(CHART_RELEASE_DIR) $(CHART_PACKAGE_DIR) ## Builds the chart to publish with a release
+build-chart: $(HELM) $(KUSTOMIZE) clean-chart-release-dir $(RELEASE_DIR) $(CHART_RELEASE_DIR) $(CHART_PACKAGE_DIR) ## Builds the chart to publish with a release
 	$(KUSTOMIZE) build ./config/chart > $(CHART_DIR)/templates/rancher-turtles-components.yaml
 	cp -rf $(CHART_DIR)/* $(CHART_RELEASE_DIR)
 	sed -i'' -e 's@image: .*@image: '"$(CONTROLLER_IMG)"'@' $(CHART_RELEASE_DIR)/values.yaml
@@ -521,7 +525,8 @@ test-e2e: $(GINKGO) $(HELM) $(CLUSTERCTL) kubectl e2e-image ## Run the end-to-en
 	    -e2e.skip-resource-cleanup=$(SKIP_RESOURCE_CLEANUP) \
 		-e2e.use-existing-cluster=$(USE_EXISTING_CLUSTER) \
 		-e2e.isolated-mode=$(ISOLATED_MODE) \
-		-e2e.use-eks=$(USE_EKS)
+		-e2e.use-eks=$(USE_EKS) \
+		-e2e.cni=$(CNI)
 
 .PHONY: e2e-image
 e2e-image: ## Build the image for e2e tests
