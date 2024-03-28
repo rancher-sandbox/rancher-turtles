@@ -12,7 +12,7 @@ env:
   CONTROLLER_IMAGE_VERSION: v0.0.1
   PULL_POLICY: Never
   CERT_MANAGER_VERSION: v1.12.3
-  RANCHER_VERSION: v2.7.5
+  RANCHER_VERSION: v2.8.1
 
 jobs:
   lint-test:
@@ -77,7 +77,7 @@ jobs:
         run: helm install rancher rancher-stable/rancher --namespace cattle-system --create-namespace --set bootstrapPassword=rancheradmin --set replicas=1 --set hostname="e2e.dev.rancher" --set 'extraEnv[0].name=CATTLE_FEATURES' --set global.cattle.psp.enabled=false --version ${{ env.RANCHER_VERSION }} --wait
 
       - name: Run chart-testing (install)
-        run: helm install rancher-turtles out/charts/rancher-turtles/ -n rancher-turtles-system --create-namespace --wait --set cluster-api-operator.cluster-api.enabled=false --set cluster-api-operator.enabled=false
+        run: helm install rancher-turtles out/charts/rancher-turtles/ -n rancher-turtles-system --create-namespace --wait
 
       - name: Run chart-testing (un-install)
         run: helm uninstall rancher-turtles -n rancher-turtles-system --wait
