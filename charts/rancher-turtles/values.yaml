@@ -48,3 +48,16 @@ cluster-api-operator:
       fetchConfig:
         url: ""
         selector: ""
+    rke2:
+      enabled: true
+      version: ""
+      bootstrap:
+        namespace: rke2-bootstrap-system
+        fetchConfig:
+          url: ""
+          selector: ""
+      controlPlane:
+        namespace: rke2-control-plane-system
+        fetchConfig:
+          url: ""
+          selector: ""

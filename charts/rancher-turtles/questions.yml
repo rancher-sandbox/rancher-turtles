@@ -45,3 +45,8 @@ questions:
     description: "Flag to enable or disable installation of cert-manager. If set to false then you will need to install cert-manager manually"
     label: "Enable Cert Manager"
     type: boolean
+  - variable: cluster-api-operator.cluster-api.rke2.enabled
+    default: "true"
+    description: "Flag to enable or disable installation of the RKE2 provider for Cluster API. By default this is enabled."
+    label: "Enable Cert Manager"
+    type: boolean
