@@ -4,7 +4,15 @@ apiVersion: v1
 kind: Namespace
 metadata:
   annotations:
-    "helm.sh/hook": "post-install, post-upgrade"
+    "helm.sh/hook": "pre-delete"
+    "helm.sh/hook-weight": "3"
+  name: {{ index .Values "cluster-api-operator" "cluster-api" "core" "namespace" }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    "helm.sh/hook": "post-install, post-upgrade, pre-delete"
     "helm.sh/hook-weight": "1"
   name: {{ index .Values "cluster-api-operator" "cluster-api" "core" "namespace" }}
 ---
@@ -14,7 +22,7 @@ metadata:
   name: cluster-api
   namespace: {{ index .Values "cluster-api-operator" "cluster-api" "core" "namespace" }}
   annotations:
-    "helm.sh/hook": "post-install, post-upgrade"
+    "helm.sh/hook": "post-install, post-upgrade, pre-delete"
     "helm.sh/hook-weight": "2"
 spec:
   name: cluster-api
