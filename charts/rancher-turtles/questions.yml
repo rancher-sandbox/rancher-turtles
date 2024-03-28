@@ -8,21 +8,35 @@ questions:
   show_subquestion_if: false
   group: "Rancher Turtles Extra Features"
   subquestions:
-  - variable: rancherTurtles.features.embedded-capi.disabled
-    default: true
-    description: "Specify that the Rancher embedded cluster api feature be disabled"
-    type: boolean
-    label: Disable Rancher Embedded CAPI
+  - variable: rancherTurtles.managerArguments
+    default: "[]"
+    description: "Specify additional manager arguments to the rancher turtles deployment"
+    type: multiline
+    label: Manager Arguments
+    group: "Rancher Turtles Features Settings"
+  - variable: rancherTurtles.namespace
+    default: "rancher-turtles-system"
+    description: "Specify a different namespace for turtles installation"
+    type: string
+    label: Namespace
     group: "Rancher Turtles Features Settings"
   - variable: rancherTurtles.features.rancher-webhook.cleanup
     default: true
     description: "Specify that the Rancher embedded cluster api webhooks should be removed"
     type: boolean
     label: Cleanup Rancher Embedded CAPI Webhooks
-    group: "Rancher Turtles Features Settings"
-  - variable: rancherTurtles.features.rancher-webhook.kubectlImage
-    default: "rancher/kubectl"
-    description: "Specify the image to use when cleaning up the webhooks"
+    group: "Rancher webhook cleanup settings"
+    show_subquestion_if: true
+    subquestions:
+    - variable: rancherTurtles.features.rancher-webhook.kubectlImage
+      default: "registry.k8s.io/kubernetes/kubectl:v1.28.0"
+      description: "Specify the image to use when cleaning up the webhooks"
+      type: string
+      label: Webhook Cleanup Image
+      group: "Rancher webhook cleanup settings"
+  - variable: rancherTurtles.features.cluster-api-operator.kubectlImage
+    default: "registry.k8s.io/kubernetes/kubectl:v1.28.0"
+    description: "Specify the image to use when cleaning up the Cluster API Operator manifests"
     type: string
     label: Cleanup Image
     group: "Rancher Turtles Features Settings"
@@ -32,16 +46,14 @@ questions:
     type: boolean
     label: Label Rancher Kubeconfigs
     group: "Rancher Turtles Features Settings"
-- variable: cluster-api-operator.enabled
-  default: "true"
-  description: "Flag to enable or disable installation of the Cluster API Operator. If you disable this then you will need to manage the CAPI controllers yourself."
-  label: "Enable Cluster API Operator"
-  type: boolean
-  group: "Cluster API Operator"
-  show_subquestion_if: true
-  subquestions:
-  - variable: cluster-api-operator.cert-manager.enabled
-    default: "false"
-    description: "Flag to enable or disable installation of cert-manager. If set to false then you will need to install cert-manager manually"
-    label: "Enable Cert Manager"
+  - variable: rancherTurtles.features.managementv3-cluster.enabled
+    default: false
+    description: "(Experemental) Use v3/management cluster manifest for import, instead of v1/provisioning"
     type: boolean
+    label: Use management v3 cluster manifest
+    group: "Rancher Turtles Features Settings"
+- variable: cluster-api-operator.cert-manager.enabled
+  default: "false"
+  description: "Flag to enable or disable installation of cert-manager. If set to false, then the cert-manager will not be installed as a dependency."
+  label: "Enable Cert Manager"
+  type: boolean
