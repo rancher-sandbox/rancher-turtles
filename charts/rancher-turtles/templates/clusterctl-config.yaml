@@ -9,7 +9,7 @@ data:
     providers:
     # Cluster API core provider
     - name:         "cluster-api"
-      url:          "https://github.com/kubernetes-sigs/cluster-api/releases/v1.6.2/core-components.yaml"
+      url:          "https://github.com/kubernetes-sigs/cluster-api/releases/v1.4.6/core-components.yaml"
       type:         "CoreProvider"
 
     # Infrastructure providers
@@ -20,7 +20,7 @@ data:
       url:          "https://github.com/kubernetes-sigs/cluster-api-provider-azure/releases/v1.13.2/infrastructure-components.yaml"
       type:         "InfrastructureProvider"
     - name:         "docker"
-      url:          "https://github.com/kubernetes-sigs/cluster-api/releases/v1.6.2/infrastructure-components-development.yaml"
+      url:          "https://github.com/kubernetes-sigs/cluster-api/releases/v1.4.6/infrastructure-components-development.yaml"
       type:         "InfrastructureProvider"
     - name:         "gcp"
       url:          "https://github.com/kubernetes-sigs/cluster-api-provider-gcp/releases/v1.6.0/infrastructure-components.yaml"
@@ -34,7 +34,7 @@ data:
 
     # Bootstrap providers
     - name:         "kubeadm"
-      url:          "https://github.com/kubernetes-sigs/cluster-api/releases/v1.6.2/bootstrap-components.yaml"
+      url:          "https://github.com/kubernetes-sigs/cluster-api/releases/v1.4.6/bootstrap-components.yaml"
       type:         "BootstrapProvider"
     - name:         "rke2"
       url:          "https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/v0.2.6/bootstrap-components.yaml"
@@ -42,7 +42,7 @@ data:
 
     # ControlPlane providers
     - name:         "kubeadm"
-      url:          "https://github.com/kubernetes-sigs/cluster-api/releases/v1.6.2/control-plane-components.yaml"
+      url:          "https://github.com/kubernetes-sigs/cluster-api/releases/v1.4.6/control-plane-components.yaml"
       type:         "ControlPlaneProvider"
     - name:         "rke2"
       url:          "https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/v0.2.6/control-plane-components.yaml"
